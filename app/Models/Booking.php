@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\BookingStatus;
+use App\Enums\BookingStatus;
 use Illuminate\Database\Eloquent\Model;
 
 class Booking extends Model
