@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreBookingRequest;
+use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Seat;
 use App\Models\Trip;
@@ -22,5 +23,26 @@ class BookingController extends Controller
         $booking = $bookingService->createBooking($customer, $trip, $seat);
 
         return response()->json($booking, 201);
+    }
+
+    public function show(Booking $booking): JsonResponse
+    {
+        $booking->load(['customer', 'trip', 'seat']);
+
+        return response()->json(['data' => $booking]);
+    }
+
+    public function confirm(Booking $booking, BookingService $bookingService): JsonResponse
+    {
+        $booking = $bookingService->confirm($booking);
+
+        return response()->json(['data' => $booking]);
+    }
+
+    public function cancel(Booking $booking, BookingService $bookingService): JsonResponse
+    {
+        $booking = $bookingService->cancel($booking);
+
+        return response()->json(['data' => $booking]);
     }
 }

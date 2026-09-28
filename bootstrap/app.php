@@ -1,5 +1,6 @@
 <?php
 
+use App\Exceptions\InvalidBookingStateException;
 use App\Exceptions\SeatAlreadyBookedException;
 use App\Exceptions\SeatDoesNotBelongToTripException;
 use Illuminate\Foundation\Application;
@@ -18,6 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (InvalidBookingStateException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json(['message' => 'Invalid booking state transition.'], 409);
+            }
+        });
+
         $exceptions->render(function (SeatAlreadyBookedException $e, Request $request) {
             if ($request->is('api/*')) {
                 return response()->json(['message' => 'Seat is already booked.'], 409);
