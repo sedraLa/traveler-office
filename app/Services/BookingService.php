@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Enums\BookingStatus;
 use App\Enums\TripType;
+use App\Exceptions\SeatAlreadyBookedException;
+use App\Exceptions\SeatDoesNotBelongToTripException;
 use App\Models\Booking;
 use App\Models\Customer;
 use App\Models\Seat;
@@ -26,7 +28,7 @@ class BookingService
             $seat = Seat::lockForUpdate()->findOrFail($seat->id);
 
             if ($seat->trip_id !== $trip->id) {
-                throw new \LogicException('This seat does not belong to the given trip.');
+                throw new SeatDoesNotBelongToTripException();
             }
 
             $activeStatuses = [BookingStatus::PENDING->value, BookingStatus::CONFIRMED->value];
@@ -37,7 +39,7 @@ class BookingService
                 ->exists();
 
             if ($alreadyBooked) {
-                throw new \RuntimeException('This seat is already booked for this trip.');
+                throw new SeatAlreadyBookedException();
             }
 
             $price = $trip->trip_type === TripType::VIP

@@ -1,8 +1,11 @@
 <?php
 
+use App\Exceptions\SeatAlreadyBookedException;
+use App\Exceptions\SeatDoesNotBelongToTripException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,5 +18,24 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (SeatAlreadyBookedException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json(['message' => 'Seat is already booked.'], 409);
+            }
+        });
+
+        $exceptions->render(function (SeatDoesNotBelongToTripException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json(['message' => 'Seat does not belong to this trip.'], 422);
+            }
+        });
+
+        $exceptions->render(function (\Throwable $e, Request $request) {
+            if ($request->is('api/*')
+                && !($e instanceof \Illuminate\Validation\ValidationException)
+                && !($e instanceof \Illuminate\Auth\AuthenticationException)
+            ) {
+                return response()->json(['message' => 'Server Error'], 500);
+            }
+        });
     })->create();
