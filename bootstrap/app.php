@@ -30,10 +30,18 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
+        $exceptions->render(function (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return response()->json(['message' => 'Not Found.'], 404);
+            }
+        });
+
         $exceptions->render(function (\Throwable $e, Request $request) {
             if ($request->is('api/*')
                 && !($e instanceof \Illuminate\Validation\ValidationException)
                 && !($e instanceof \Illuminate\Auth\AuthenticationException)
+                && !($e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException)
+                && !($e instanceof \Symfony\Component\HttpKernel\Exception\HttpException)
             ) {
                 return response()->json(['message' => 'Server Error'], 500);
             }
